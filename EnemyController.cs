@@ -1,86 +1,72 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-
-﻿public class EnemyController : MonoBehaviour
+[RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(AudioSource))]
+public class EnemyController : MonoBehaviour
 {
-    public float speed;
-    public bool vertical;
-    public float changeTime = 3.0f;
-    public ParticleSystem smokeEffect;
+    [SerializeField] private float _moveSpeed;
+    [SerializeField] private bool _isVerticalEnemy;
+    [SerializeField] private float _changeTime = 3.0f;
+    [SerializeField] private ParticleSystem _smokeEffect;
+    [SerializeField] private AudioClip _hitClip; 
 
-    Rigidbody2D rigidbody2D;
-    float timer;
-    int direction = 1;
-    bool broken = true;
+
+    private float _timer;
+    private int _direction = 1;
+    private bool _isBroken = true;
     
-    Animator animator;
-
-    AudioSource audioSource;
-    public AudioClip hitClip; 
-
+    private Animator _animator;
+    private Rigidbody2D _rigidbody;
+    private AudioSource _audioSource;
     
-    // Start is called before the first frame update
     void Start()
     {
-        rigidbody2D = GetComponent<Rigidbody2D>();
-        timer = changeTime;
-        animator = GetComponent<Animator>();
-
-        audioSource= GetComponent<AudioSource>();
-        audioSource = GetComponent<AudioSource>();
-
-        audioSource.Play();
-
-    }
-
-    public void PlaySound(AudioClip clip)
-    {
-        audioSource.PlayOneShot(clip);
+        _rigidbody = GetComponent<Rigidbody2D>();
+        _animator = GetComponent<Animator>();
+        _audioSource = GetComponent<AudioSource>();
+        
+        _timer = _changeTime;
+        _audioSource.Play();
     }
 
     void Update()
     {
-        //remember ! inverse the test, so if broken is true !broken will be false and return won’t be executed.
-        if(!broken)
+        if(!_isBroken)
         {
             return;
         }
         
-        timer -= Time.deltaTime;
+        _timer -= Time.deltaTime;
 
-        if (timer < 0)
+        if (_timer < 0)
         {
-            direction = -direction;
-            timer = changeTime;
+            _direction = -_direction;
+            _timer = _changeTime;
         }
     }
     
     void FixedUpdate()
     {
-        //remember ! inverse the test, so if broken is true !broken will be false and return won’t be executed.
-        if(!broken)
+        if(!_isBroken)
         {
             return;
         }
         
-        Vector2 position = rigidbody2D.position;
+        Vector2 position = _rigidbody.velocity;
         
-        if (vertical)
+        if (_isVerticalEnemy)
         {
-            position.y = position.y + Time.deltaTime * speed * direction;
-            animator.SetFloat("MoveX", 0);
-            animator.SetFloat("MoveY", direction);
+            position.y = _moveSpeed * _direction;
+            _animator.SetFloat("MoveX", 0);
+            _animator.SetFloat("MoveY", _direction);
         }
         else
         {
-            position.x = position.x + Time.deltaTime * speed * direction;
-            animator.SetFloat("MoveX", direction);
-            animator.SetFloat("MoveY", 0);
+            position.x = _moveSpeed * _direction;
+            _animator.SetFloat("MoveX", _direction);
+            _animator.SetFloat("MoveY", 0);
         }
         
-        rigidbody2D.MovePosition(position);
+        _rigidbody.velocity = position;
     }
     
     void OnCollisionEnter2D(Collision2D other)
@@ -93,16 +79,21 @@ using UnityEngine;
         }
     }
     
-    //Public because we want to call it from elsewhere like the projectile script
-    public void Fix()
+    public void PlaySound(AudioClip clip)
     {
-        broken = false;
-        rigidbody2D.simulated = false;
+        _audioSource.PlayOneShot(clip);
+    }
+    
+    //Public because we want to call it from elsewhere like the projectile script
+    public void Fix() //what does fix mean?
+    {
+        _isBroken = false;
+        _rigidbody.simulated = false;
         //optional if you added the fixed animation
-        animator.SetTrigger("Fixed");
+        _animator.SetTrigger("Fixed");
         
-        smokeEffect.Stop();
-        audioSource.PlayOneShot(hitClip);
-        audioSource.Stop();
+        _smokeEffect.Stop();
+        _audioSource.PlayOneShot(_hitClip);
+        _audioSource.Stop();
     }
 }
