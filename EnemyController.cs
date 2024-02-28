@@ -71,25 +71,14 @@ public class EnemyController : MonoBehaviour
     
     void OnCollisionEnter2D(Collision2D other)
     {
-        RubyController player = other.gameObject.GetComponent<RubyController >();
-
-        if (player != null)
-        {
-            player.ChangeHealth(-1);
-        }
+        other.transform.TryGetComponent(out RubyController controller);
+        controller.TakeDamage(1);
     }
     
-    public void PlaySound(AudioClip clip)
-    {
-        _audioSource.PlayOneShot(clip);
-    }
-    
-    //Public because we want to call it from elsewhere like the projectile script
     public void Fix() //what does fix mean?
     {
         _isBroken = false;
         _rigidbody.simulated = false;
-        //optional if you added the fixed animation
         _animator.SetTrigger("Fixed");
         
         _smokeEffect.Stop();

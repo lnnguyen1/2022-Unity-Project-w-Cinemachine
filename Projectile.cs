@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
+    [SerializeField] private float _maxRange = 100f;
+    
     private Rigidbody2D _rigidbody;
     
     void Awake()
@@ -18,7 +20,7 @@ public class Projectile : MonoBehaviour
     
     void Update()
     {
-        if(transform.position.magnitude > 1000.0f)
+        if(transform.position.magnitude > _maxRange)
         {
             Destroy(gameObject);
         }

@@ -5,6 +5,7 @@ public class RubyController : MonoBehaviour
 {
     public int GetCurrentHealth => currentHealth;
     public int GetMaxHealth => _maxHealth;
+    
     [Header("Player Stats")]
     [SerializeField] private float _moveSpeed = 3.0f;
     [SerializeField] private float _timeInvincible = 2.0f;
@@ -23,8 +24,8 @@ public class RubyController : MonoBehaviour
     private Rigidbody2D _rigidbody;
     private Animator _animator;
     private AudioSource _audioSource;
+    
     private Vector2 _lookDirection = new Vector2(0,-1);
-
     private Vector2 _input;
     
     void Start()
@@ -37,6 +38,42 @@ public class RubyController : MonoBehaviour
     }
 
     private void Update()
+    {
+        Move();
+        CheckInvincible();
+        CheckInputs();
+    }
+
+    private void CheckInputs()
+    {
+        if(Input.GetKeyDown(KeyCode.C))
+        {
+            Launch();
+            _healthEffect.Play();
+        }
+        
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            var hit = Physics2D.OverlapCircle(_rigidbody.position, 1.5f, LayerMask.GetMask("NPC"));
+            if (hit != null)
+            {
+                hit.TryGetComponent(out NonPlayerCharacter npc);
+                npc.DisplayDialog();
+            }
+        }
+    }
+
+    private void CheckInvincible()
+    {
+        if (_isInvincible)
+        {
+            _invincibleTimer -= Time.deltaTime;
+            if (_invincibleTimer < 0)
+                _isInvincible = false;
+        }
+    }
+
+    private void Move()
     {
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
@@ -52,31 +89,8 @@ public class RubyController : MonoBehaviour
         _animator.SetFloat("Look X", _lookDirection.x);
         _animator.SetFloat("Look Y", _lookDirection.y);
         _animator.SetFloat("Speed", _input.magnitude);
-        
-        if (_isInvincible)
-        {
-            _invincibleTimer -= Time.deltaTime;
-            if (_invincibleTimer < 0)
-                _isInvincible = false;
-        }
-        
-        if(Input.GetKeyDown(KeyCode.C))
-        {
-            Launch();
-            _healthEffect.Play();
-        }
-        
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            RaycastHit2D hit = Physics2D.Raycast(_rigidbody.position + Vector2.up * 0.2f, _lookDirection, 1.5f, LayerMask.GetMask("NPC"));
-            if (hit.collider != null)
-            {
-                hit.collider.TryGetComponent(out NonPlayerCharacter npc);
-                npc.DisplayDialog();
-            }
-        }
     }
-    
+
     void FixedUpdate()
     {
         Vector2 position = _rigidbody.position;
@@ -91,18 +105,34 @@ public class RubyController : MonoBehaviour
         _audioSource.PlayOneShot(clip);
     }
 
-    public void ChangeHealth(int amount)
+    public void TakeDamage(int damage)
     {
-        if (amount < 0)
-        {
-            if (_isInvincible) return;
-            _isInvincible = true;
-            _invincibleTimer = _timeInvincible;
-            _animator.SetTrigger("Hit");
-        }
-        currentHealth = Mathf.Clamp(currentHealth + amount, 0, _maxHealth);
+        if (_isInvincible) return;
+        _isInvincible = true;
+        _invincibleTimer = _timeInvincible;
+        _animator.SetTrigger("Hit");
         
+        currentHealth = Mathf.Clamp(currentHealth - damage, 0, _maxHealth);
         UIHealthBar.instance.SetValue(currentHealth / (float)_maxHealth);
+        if (currentHealth == 0)
+        {
+            Die();
+        }
+    }
+
+    public void RestoreHealth(int amount)
+    {
+        currentHealth = Mathf.Clamp(currentHealth + amount, 0, _maxHealth);
+        UIHealthBar.instance.SetValue(currentHealth / (float)_maxHealth);
+        if (currentHealth == 0)
+        {
+            Die();
+        }
+    }
+    
+    private void Die()
+    {
+        Destroy(gameObject); //you can edit it like what you need
     }
 
     private void Launch()
