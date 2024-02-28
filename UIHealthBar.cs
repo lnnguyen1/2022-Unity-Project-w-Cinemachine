@@ -1,14 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UIHealthBar : MonoBehaviour
 {
-    public static UIHealthBar instance { get; private set; }
+    public static UIHealthBar instance;
     
-    public Image mask;
-    float originalSize;
+    [SerializeField] private Image _mask;
+    
+    private float originalSize;
 
     void Awake()
     {
@@ -17,11 +16,11 @@ public class UIHealthBar : MonoBehaviour
 
     void Start()
     {
-        originalSize = mask.rectTransform.rect.width;
+        originalSize = _mask.rectTransform.rect.width;
     }
 
     public void SetValue(float value)
     {				      
-        mask.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, originalSize * value);
+        _mask.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, originalSize * value);
     }
 }

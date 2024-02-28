@@ -1,24 +1,26 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+
+[RequireComponent(typeof(Rigidbody2D))]
 
 public class Projectile : MonoBehaviour
 {
-    Rigidbody2D rigidbody2d;
+    [SerializeField] private float _maxRange = 100f;
+    
+    private Rigidbody2D _rigidbody;
     
     void Awake()
     {
-        rigidbody2d = GetComponent<Rigidbody2D>();
+        _rigidbody = GetComponent<Rigidbody2D>();
     }
     
     public void Launch(Vector2 direction, float force)
     {
-        rigidbody2d.AddForce(direction * force);
+        _rigidbody.AddForce(direction * force);
     }
     
     void Update()
     {
-        if(transform.position.magnitude > 1000.0f)
+        if(transform.position.magnitude > _maxRange)
         {
             Destroy(gameObject);
         }
@@ -26,12 +28,8 @@ public class Projectile : MonoBehaviour
     
     void OnCollisionEnter2D(Collision2D other)
     {
-        EnemyController e = other.collider.GetComponent<EnemyController>();
-        if (e != null)
-        {
-            e.Fix();
-        }
-    
+        other.collider.TryGetComponent(out EnemyController enemyController);
+        enemyController.Fix();
         Destroy(gameObject);
     }
 }

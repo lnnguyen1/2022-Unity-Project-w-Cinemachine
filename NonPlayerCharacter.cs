@@ -1,16 +1,15 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class NonPlayerCharacter : MonoBehaviour
 {
-    public float displayTime = 4.0f;
-    public GameObject dialogBox;
-    float timerDisplay;
+    [SerializeField] private float _displayTime = 4.0f;
+    [SerializeField] private GameObject _dialogBox;
+    
+    private float timerDisplay;
     
     void Start()
     {
-        dialogBox.SetActive(false);
+        _dialogBox.SetActive(false);
         timerDisplay = -1.0f;
     }
     
@@ -21,14 +20,14 @@ public class NonPlayerCharacter : MonoBehaviour
             timerDisplay -= Time.deltaTime;
             if (timerDisplay < 0)
             {
-                dialogBox.SetActive(false);
+                _dialogBox.SetActive(false);
             }
         }
     }
     
     public void DisplayDialog()
     {
-        timerDisplay = displayTime;
-        dialogBox.SetActive(true);
+        timerDisplay = _displayTime;
+        _dialogBox.SetActive(true);
     }
 }
